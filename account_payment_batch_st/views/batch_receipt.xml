@@ -88,7 +88,7 @@
                                 <span t-field="line.move_name"/>  <span t-field="line.tax_line_id"/> n.<span t-field="line.name"/>
                             </td>
                             <td class="text-right o_price_total">
-                                <span class="text-nowrap" t-field="line.amount_currency"/>
+                                <span class="text-nowrap" t-field="line.abs_amount_currency"/>
                             </td>
                         </tr>
                     </t>
@@ -108,7 +108,7 @@
                     <tr>
                         <td><strong><span>Total Pagado</span></strong></td>
                         <td class="text-right">
-                            <strong><span class="text-nowrap" t-field="o.amount"/></strong>
+                            <strong><span class="text-nowrap"><t t-esc="o.amount + sum([t.abs_amount_currency for t in o.l10n_ar_withholding_ids])"/></span></strong>
                         </td>
                     </tr>
                 </tfoot>
