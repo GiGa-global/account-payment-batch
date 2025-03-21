@@ -108,7 +108,7 @@
                     <tr>
                         <td><strong><span>Total Pagado</span></strong></td>
                         <td class="text-right">
-                            <strong><span class="text-nowrap"><t t-esc="o.amount + sum([t.abs_amount_currency for t in o.l10n_ar_withholding_ids])"/></span></strong>
+                            <strong><span class="text-nowrap"><t t-esc="abs(o.amount) + sum([t.abs_amount_currency for t in o.l10n_ar_withholding_ids])"/></span></strong>
                         </td>
                     </tr>
                 </tfoot>
@@ -134,7 +134,7 @@
                                 <span class="text-nowrap" t-out="(o.partner_type == 'supplier' and -1.0 or 1.0) * line.balance" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                             <td class="text-right o_price_total">
-                                <span class="text-nowrap" t-out="(o.partner_type == 'supplier' and -1.0 or 1.0) * line.payment_matched_amount" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                                <span class="text-nowrap" t-out="abs(line.payment_matched_amount)" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                         </tr>
                     </t>
@@ -143,7 +143,7 @@
                         <td class="text-center"/>
                         <td class="text-right o_price_total"/>
                         <td class="text-right o_price_total">
-                            <span class="text-nowrap" t-field="o.amount_residual"/>
+                            <span class="text-nowrap"><t t-esc="abs(o.amount_residual) + sum([t.abs_amount_currency for t in o.l10n_ar_withholding_ids])"/></span>
                         </td>
                     </tr>
                 </tbody>
