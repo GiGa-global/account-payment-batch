@@ -41,11 +41,20 @@ class AccountPayment(models.Model):
 
     def _ensure_batch(self):
         batch_id = self.mapped('batch_payment_st_id')[:1]
+        same_payment_type = all([p.payment_type == self[0].payment_type for p in self]) if self else False
+        same_partner_type = all([p.partner_type == self[0].partner_type for p in self]) if self else False
+        same_company_id = all([p.company_id.id == self[0].company_id.id for p in self]) if self else False
+        if not same_payment_type:
+            raise UserError('Todos los pagos deben ser del mismo tipo')
+        if not same_partner_type:
+            raise UserError('Todos los pagos deben tener el mismo tipo de partner')
+        if not same_company_id:
+            raise UserError('Todos los pagos deben tener la misma compañia')
         if not batch_id:
             batch_id = self.env['account.payment.batch.st'].create({
-                'batch_type': self.payment_type,
-                'partner_type': self.partner_type,
-                'company_id': self.company_id.id,
+                'batch_type': self[0].payment_type,
+                'partner_type': self[0].partner_type,
+                'company_id': self[0].company_id.id,
 
             })
         return batch_id
