@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 {
     "name": "Lote de pagos - Recibos y Ordenes de pago",
-    "version": "17.0.1.1.0",
+    "version": "17.0.2.1.0",
     "category": "Accounting",
     "website": "https://github.com/sumitec-odoo/account-addons",
     "author": "sumitec",
