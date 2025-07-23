@@ -1,6 +1,10 @@
 from odoo import models, fields, api
 import base64
 from odoo.tools import safe_eval
+from odoo.exceptions import MissingError
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class MailComposeMessage(models.TransientModel):
@@ -22,15 +26,41 @@ class MailComposeMessage(models.TransientModel):
                 if not report:
                     return
                 
-                for withholding in batch.l10n_ar_withholding_ids:
-                    report_name = safe_eval.safe_eval(report.print_report_name, {'object': withholding})
-                    result, _ = self.env['ir.actions.report']._render(report.report_name, withholding.ids)
-                    file = base64.b64encode(result)
-                    data_attach = {
-                        'name': report_name,
-                        'datas': file,
-                        'res_model': 'mail.compose.message',
-                        'res_id': 0,
-                        'type': 'binary',
-                    }
-                    composer.attachment_ids += self.env['ir.attachment'].create(data_attach)
+                # Obtener todas las retenciones de los pagos del lote
+                all_withholdings = self.env['l10n_ar.payment.withholding']
+                for payment in batch.payment_ids:
+                    if hasattr(payment, 'l10n_ar_withholding_line_ids'):
+                        for withholding in payment.l10n_ar_withholding_line_ids:
+                            try:
+                                # Verificar que el registro existe
+                                if withholding.exists():
+                                    all_withholdings |= withholding
+                            except MissingError:
+                                _logger.warning(f"Withholding record {withholding.id} no longer exists, skipping")
+                                continue
+                            except Exception as e:
+                                _logger.warning(f"Error checking withholding record {withholding.id}: {e}")
+                                continue
+                
+                for withholding in all_withholdings:
+                    try:
+                        if not withholding.exists():
+                            continue
+                            
+                        report_name = safe_eval.safe_eval(report.print_report_name, {'object': withholding})
+                        result, _ = self.env['ir.actions.report']._render(report.report_name, withholding.ids)
+                        file = base64.b64encode(result)
+                        data_attach = {
+                            'name': report_name,
+                            'datas': file,
+                            'res_model': 'mail.compose.message',
+                            'res_id': 0,
+                            'type': 'binary',
+                        }
+                        composer.attachment_ids += self.env['ir.attachment'].create(data_attach)
+                    except MissingError:
+                        _logger.warning(f"Withholding record {withholding.id} no longer exists, skipping")
+                        continue
+                    except Exception as e:
+                        _logger.error(f"Error generating withholding certificate for {withholding.id}: {e}")
+                        continue

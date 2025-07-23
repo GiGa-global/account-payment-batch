@@ -15,7 +15,7 @@
         Here is your payment receipt <span style="font-weight:bold;" t-out="(object.name or '').replace('/','-') or ''">BNK1-2021-05-0002</span> amounting
         to <span style="font-weight:bold;" t-out="format_amount(object.amount, object.currency_id) or ''">$ 10.00</span> from <t t-out="object.company_id.name or ''">YourCompany</t>.
         <br/><br/>
-        <t t-if="object.l10n_ar_withholding_ids">
+        <t t-if="any(payment.l10n_ar_withholding_line_ids for payment in object.payment_ids if hasattr(payment, 'l10n_ar_withholding_line_ids'))">
             <strong>Note:</strong> This payment includes withholding certificates which are attached to this email.
             <br/><br/>
         </t>
